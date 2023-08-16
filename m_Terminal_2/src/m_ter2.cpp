@@ -113,81 +113,9 @@ void sendResult(bool result, int brainNo=Mother.getPolledSlave()) {
 void timedTrigger() {
     if (timestamp > millis() || lastStage != stage) { return; }
     switch (stage) {
-        case unlock: 
-            stage = failedUnlock;
-        break;
         // alternatively use cardspresent to send evaluation
-        default: 
-            if ((stage & (seperationLocked + seperationUnlocked)) > 0) {
-                if (cardsPresent == 0) {return;}
-                resetDualRfid();
-                sendResult(false, 0);
-                sendResult(false, 1);
-            }
-        break;
+        default: break;
     }
-}
-
-
-/**
- * @brief  handles RFId scanning required on both sides
- * @param passNo 
-*/
-void checkDualRfid(int passNo) {
-     
-    timestamp = millis() + rfidTimeout;
-    if (stage == seperationUnlocked && inputPCF.digitalRead(reedDoor)) {
-        resetDualRfid();
-        Serial.println("door is not closed");
-        return;
-    }
-    cardsPresent |= passNo + 1;
-    brainsPresent |= Mother.getPolledSlave() + 1;
-
-    // not presented on both cards, hence we exit here
-    if (cardsPresent <= PasswordAmount) { return; }
-    // not both rfid readers used so its invalid
-    if (brainsPresent <= int(labAccess) + 1) {
-        Serial.println("not enoough brains present");
-        return;
-    }
-
-    cardsPresent = brainsPresent = 0;
-
-    switch (stage) {
-        case seperationUnlocked: 
-            Mother.motherRelay.digitalWrite(door, doorClosed); 
-            delay(100);
-            if (Mother.getPolledSlave() == 0) {
-                switch (passNo) {
-                    // either this case?
-                    case 0: MotherIO.setOuput(davidSeperated, true); break;
-                    case 1: MotherIO.setOuput(rachelSeperated, true); break;
-                }
-            } else {
-                switch (passNo) {
-                    case 0: MotherIO.setOuput(rachelSeperated, true); break;
-                    case 1: MotherIO.setOuput(davidSeperated, true); break;
-                }
-            }
-            stage = seperationLocked; 
-        break;
-        case seperationLocked:
-            Mother.motherRelay.digitalWrite(door, doorOpen); // first thing we do since we dont wanna
-            delay(100);
-            MotherIO.setOuput(seperationEnd, true);
-            stage = seperationUnlocked;
-        break;
-    }
-
-    sendResult(true, 0);
-    sendResult(true, 1);
-
-    wdt_reset();
-    delay(500);
-    MotherIO.outputReset();
-    delay(4500);
-    wdt_reset();
 }
 
 
@@ -196,8 +124,7 @@ void checkDualRfid(int passNo) {
  * @param passNo 
 */
 void handleCorrectPassword(int passNo) {
-
-    switch (stage) {}
+    Mother.motherRelay.digitalWrite(lid, open);
 }
 
 
@@ -222,33 +149,38 @@ bool passwordInterpreter(char* password) {
 /**
  * @brief handles evalauation of codes and sends the result to the access module
  * @param cmdPtr 
- * @todo handle the unlock/locking here with 2 access modules
 */
-void handleResult() {
-    Mother.STB_.rcvdPtr = strtok(Mother.STB_.rcvdPtr, KeywordsList::delimiter.c_str());
-    if ((Mother.STB_.rcvdPtr != NULL) && passwordInterpreter(Mother.STB_.rcvdPtr)) {
-        // excluding the cases where both cards need to be present
-        // here may be the ussie... keep the sendresult stuff in one place
-        if ((stage & (seperationUnlocked + seperationLocked)) == 0) {
-            sendResult(true);
-        }
+void handleResult(char *cmdPtr) {
+    cmdPtr = strtok(NULL, KeywordsList::delimiter.c_str());
+
+    // prepare return msg with correct or incorrect
+    char msg[10] = "";
+    char noString[3] = "";
+    strcpy(msg, keypadCmd.c_str());
+    strcat(msg, KeywordsList::delimiter.c_str());
+    if (passwordInterpreter(cmdPtr) && (cmdPtr != NULL)) {
+        sprintf(noString, "%d", KeypadCmds::correct);
+        strcat(msg, noString);
     } else {
-        sendResult(false);
+        sprintf(noString, "%d", KeypadCmds::wrong);
+        strcat(msg, noString);
     }
+  
+    Mother.sendCmdToSlave(msg);
 }
 
 
-// again good candidate for a mother specific lib
+
 bool checkForRfid() {
+    Serial.println(Mother.STB_.rcvdPtr);
     if (strncmp(KeywordsList::rfidKeyword.c_str(), Mother.STB_.rcvdPtr, KeywordsList::rfidKeyword.length() ) != 0) {
         return false;
     } 
-    Mother.STB_.rcvdPtr += KeywordsList::rfidKeyword.length();
-    handleResult();
+    char *cmdPtr = strtok(Mother.STB_.rcvdPtr, KeywordsList::delimiter.c_str());
+    handleResult(cmdPtr);
     wdt_reset();
     return true;
 }
-
 
 void interpreter() {
     while (Mother.nextRcvdLn()) {
@@ -265,25 +197,6 @@ void oledUpdate(int brainIndex = 0) {
     Mother.sendCmdToSlave(msg, brainIndex);
 }
 
-
-void oledFailed() {
-    timestamp = millis() + displayFailedUnlock;
-    char timeoutMsg[32] = "";
-    strcpy(timeoutMsg, oledHeaderCmd.c_str());
-    strcat(timeoutMsg, KeywordsList::delimiter.c_str());
-    strcat(timeoutMsg, stageTexts[stageIndex]);
-    char cleanMsg[32] = "";
-    strcpy(cleanMsg, oledHeaderCmd.c_str());
-    strcat(cleanMsg, KeywordsList::delimiter.c_str());
-    strcat(cleanMsg,  "Clean Airlock"); 
-    while (timestamp > millis()) {
-        wdt_reset();
-        Mother.sendCmdToSlave(timeoutMsg);
-        delay(1500);
-        Mother.sendCmdToSlave(cleanMsg);
-        delay(1500);
-    }  
-}
 
 
 void stageActions() {
@@ -328,18 +241,13 @@ void stageUpdate() {
 
 void handleInputs() {
     
-    if ( (stage & (idle | seperationUnlocked | seperationLocked)) == 0) { return; }
-
     int result = MotherIO.getInputs();
-    result -= result & (1 << reedDoor);
-    if (result == 0) { return; }
-    // Serial.println("result");
-    // Serial.println(result);
-    // delay(5000);
-    wdt_reset();
-    switch (result) {
-        default: break;
+
+    if (result & usbStick) {
+        Mother.motherRelay.digitalWrite(gate, open);
     }
+
+    wdt_reset();
 }
 
 
@@ -347,8 +255,12 @@ void setup() {
 
     Mother.begin();
     // starts serial and default oled
+    Serial.println("relay init");
     Mother.relayInit(relayPinArray, relayInitArray, relayAmount);
+    Serial.println("IO init");
     MotherIO.ioInit(intputArray, sizeof(intputArray), outputArray, sizeof(outputArray));
+
+    Mother.setFlags(0, flagMapping[stageIndex]);
 
     Serial.println("WDT endabled");
     enableWdt();
@@ -368,6 +280,7 @@ void loop() {
     handleInputs();    
     stageUpdate(); 
     wdt_reset();
+    delay(5);
 }
 
 
