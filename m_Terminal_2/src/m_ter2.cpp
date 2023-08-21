@@ -34,7 +34,7 @@ int inputTicks = 0;
 
 // general timestamp going to use this to timeout the card repsentation in unlocked and RFIDoutput
 unsigned long timestamp = millis();
-// timedTrigger shall reset this value 
+
 // cardsPreset adding bits of present cards with | 
 int cardsPresent = 0;
 int brainsPresent = 0;
@@ -101,21 +101,6 @@ void sendResult(bool result, int brainNo=Mother.getPolledSlave()) {
     strcat(msg, noString);
 
     Mother.sendCmdToSlave(msg, brainNo);
-}
-
-
-
-
-
-/**
- * @brief handles timeouts rfidTX and timeout of the RFID presentation
-*/
-void timedTrigger() {
-    if (timestamp > millis() || lastStage != stage) { return; }
-    switch (stage) {
-        // alternatively use cardspresent to send evaluation
-        default: break;
-    }
 }
 
 
@@ -275,7 +260,6 @@ void setup() {
 
 void loop() {
     validBrainResult = Mother.rs485PerformPoll();
-    timedTrigger();
     if (validBrainResult) {interpreter();}
     handleInputs();    
     stageUpdate(); 
