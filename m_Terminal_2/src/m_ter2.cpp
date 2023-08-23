@@ -30,13 +30,11 @@ int stage = setupStage;
 int stageIndex = 0;
 // doing this so the first time it updates the brains oled without an exta setup line
 int lastStage = -1;
-int inputTicks = 0;
 
 // general timestamp going to use this to timeout the card repsentation in unlocked and RFIDoutput
 unsigned long timestamp = millis();
 
-// cardsPreset adding bits of present cards with | 
-int cardsPresent = 0;
+int lastResult = 0;
 int brainsPresent = 0;
 bool lightOn = false;
 
@@ -225,9 +223,11 @@ void stageUpdate() {
 
 
 void handleInputs() {
-    
     int result = MotherIO.getInputs();
-
+    if (result == lastResult) {
+        return;
+    }
+    lastResult = result;
     if (result & usbStick) {
         Mother.motherRelay.digitalWrite(gate, open);
     }
