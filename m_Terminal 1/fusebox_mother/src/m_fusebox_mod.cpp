@@ -43,7 +43,7 @@ void setStageIndex() {
             stageIndex = i;
             Serial.print("stageIndex:");
             Serial.println(stageIndex);
-            delay(1000);
+            //delay(1000);
             return;
         }
     }
@@ -161,8 +161,8 @@ void stageActions() {
             Mother.motherRelay.digitalWrite(emergencyLight, closed);
         break;
         case endgame:
-        // logic0 has a value of high when the fuses are solved
-        if (inputPCF.digitalRead(logic0)==LOW && inputPCF.digitalRead(logic1)==HIGH  ) {
+        // logic0 has a value of LOW when the fuses are solved
+        if (inputPCF.digitalRead(logic0)==HIGH && inputPCF.digitalRead(logic1)==LOW ) {
             Serial.print("endgame");
             Mother.motherRelay.digitalWrite(emergencyLight, closed);           
         } 
