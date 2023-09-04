@@ -228,7 +228,7 @@ bool checkForValid() {
             lcd.clear();
             lcd.setCursor(3,2);
             blockInputUntill = millis() + 5000;
-            lcd.print("Acces Granted");
+            lcd.print("Access Granted");
         } else {
             setBuzzerStage(0, 400, 200, 50);
             setBuzzerStage(1, 400, 200, 50);
