@@ -228,10 +228,12 @@ void handleInputs() {
         return;
     }
     lastResult = result;
+    /*
     if (result & usbStick) {
         Mother.motherRelay.digitalWrite(gate, open);
         Mother.motherRelay.digitalWrite(light, open);
     }
+    */
 
     wdt_reset();
 }

@@ -6,7 +6,7 @@
 // may aswell move this into the Oled lib?
 #define headLineMaxSize 16
 
-#define relayAmount 3
+#define relayAmount 1
 
 #define open        0
 #define closed      1
@@ -43,26 +43,26 @@ int outputArray[outputCnt] = {};
 // -- relays
 enum relays {
     lid,
-    gate,
-    light
+    // gate,
+    // light
 };
 
 enum relayInits {
     lidInit = closed,
-    gateInit = closed,
-    lightInit = closed
+    // gateInit = closed,
+    // lightInit = closed
 };
 
 int relayPinArray[relayAmount] = {
     lid,
-    gate,
-    light
+    // gate,
+    // light
 };
 
 int relayInitArray[relayAmount] = {
     lidInit,
-    gateInit,
-    lightInit,
+    // gateInit,
+    // lightInit,
 };
 
 
