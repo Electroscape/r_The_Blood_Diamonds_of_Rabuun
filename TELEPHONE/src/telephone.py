@@ -96,7 +96,6 @@ Initialize size of code digits, language and entered number
 =========================================================================================================
 '''
 maxNumberOfDigits = 12
-numberAlbrecht = "071101232267"
 language = "deu/"
 Number = ""
 
@@ -165,13 +164,16 @@ def checkingNumberSound(path):
 def checkNumber(Number):
      
      sleep(0.5)
-     if Number == "86753489":
-          checkingNumberSound(config['PATH']['sounds'] + language + "TaxiGerst.wav")
-     elif Number in numberAlbrecht:
-          if Number == numberAlbrecht:
-               checkingNumberSound(config['PATH']['sounds'] + language + "Albrecht.wav")
-     elif Number == "90011123":
-          checkingNumberSound(config['PATH']['sounds'] + language +"Accomplice.wav")
+     if Number == "12423335529":
+          checkingNumberSound(config['PATH']['sounds'] + language + "01.wav")
+     elif Number == "12425273942":
+          checkingNumberSound(config['PATH']['sounds'] + language + "02.wav")
+     elif Number == "18005550001":
+          checkingNumberSound(config['PATH']['sounds'] + language + "03.wav")
+     elif Number == "0408295251":
+          checkingNumberSound(config['PATH']['sounds'] + language + "04.wav")
+     elif Number == "02022542395":
+          checkingNumberSound(config['PATH']['sounds'] + language + "05.wav")
      
      elif len(Number) < 12:
           return
