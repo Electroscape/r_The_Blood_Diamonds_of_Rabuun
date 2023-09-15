@@ -5,7 +5,7 @@ pkill python
 # fixes activate venv from crontab
 # shellcheck disable=SC2164
 cd "${0%/*}"
-source venv/bin/activate
+# source venv/bin/activate
 
 export DISPLAY=:0.0
 xhost +

@@ -99,6 +99,14 @@ maxNumberOfDigits = 12
 language = "deu/"
 Number = ""
 
+contacts = {
+     "12423335529": "01",
+     "12425273942": "02",
+     "18005550001": "03",
+     "0408295251": "04",
+     "02022542395": "05"
+}
+
 def restartRaspberryPi():
     command = "/usr/bin/sudo /sbin/shutdown -r now"
     process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
@@ -164,29 +172,18 @@ def checkingNumberSound(path):
 def checkNumber(Number):
      
      sleep(0.5)
-     if Number == "12423335529":
-          checkingNumberSound(config['PATH']['sounds'] + language + "01.wav")
-     elif Number == "12425273942":
-          checkingNumberSound(config['PATH']['sounds'] + language + "02.wav")
-     elif Number == "18005550001":
-          checkingNumberSound(config['PATH']['sounds'] + language + "03.wav")
-     elif Number == "0408295251":
-          checkingNumberSound(config['PATH']['sounds'] + language + "04.wav")
-     elif Number == "02022542395":
-          checkingNumberSound(config['PATH']['sounds'] + language + "05.wav")
-     
-     elif len(Number) < 12:
-          return
+     if Number in contacts:
+          checkingNumberSound(config['PATH']['sounds'] + language + contacts[Number] + ".wav")
+          checkingNumberSound(config['PATH']['sounds'] + "beepSound.wav")
      else:
           checkingNumberSound(config['PATH']['sounds'] + "dialedWrongNumber.wav")
-
 
 
 def checkCorrectDigit(event):
      print("in")
      s = Initialize_socket()
      global Number
-     pygame.mixer.music.pause()
+     pauseCurrentSound()
      empty_channel = pygame.mixer.Channel(1)
 
      if(event.key == 48):
@@ -223,6 +220,9 @@ def checkCorrectDigit(event):
           # @todo: maybe remove the checkNumber depending on the wanted use of the #/OK key but return has to stay
           # checkNumber(Number)
           return
+     
+     logging.info("number dialed is " + Number)
+
      try:
           s.send(str.encode(Number))
           
@@ -288,23 +288,28 @@ def runSystem():
 
           # if the player takes the call unpause the beep sound and check the dialed number
           if GPIO.input(config["PIN"][city]["PHONE_switch_pin"]) == GPIO.LOW:
+               if not keyPressedAtleastOnce:
+                    pygame.mixer.music.unpause()
 
-               pygame.mixer.music.unpause()
-
+               # check correct number
+               if Number in contacts:
+                    checkNumber(Number)
                # countTimer reached 5s and player didn't press a button.
-               if len(Number) < 12 and countTimer == 500 :
+               elif len(Number) < maxNumberOfDigits and countTimer == 500:
                     countTimer = 0
                     keyPressedAtleastOnce = False
-                    logging.info("Player didn't press a button for 5s nor completed 10 digits")
+                    logging.info("Player didn't press a button for 5s nor completed 12 digits")
                     pauseCurrentSound()
                     checkingNumberSound(config['PATH']['sounds'] + "dialedWrongNumber.wav")
-                    pygame.event.clear()  # clear any button pressed after 10 digits
+                    pygame.event.clear()  # clear any button pressed after 12 digits
                
-               # check correct number
-
-               if len(Number) == 12 or len(Number)==8:
-                    checkNumber(Number)
-
+               elif len(Number) >= maxNumberOfDigits:
+                    countTimer = 0
+                    keyPressedAtleastOnce = False
+                    logging.info("Player reached maximum digits")
+                    pauseCurrentSound()
+                    checkingNumberSound(config['PATH']['sounds'] + "dialedWrongNumber.wav")
+                    pygame.event.clear()  # clear any button pressed after 12 digits
 
                # keep on returning button state
                
