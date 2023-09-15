@@ -143,6 +143,7 @@ def playSound(path):
      effect.set_volume(float(100))
      empty_channel = pygame.mixer.Channel(1)
      empty_channel.play(effect)
+     return effect.get_length()
  
 # pause any current sound
 def pauseCurrentSound():
@@ -160,7 +161,7 @@ Number checking methods
 def checkingNumberSound(path):
      pauseCurrentSound()
      logging.info(f"Playing voice record {path}")
-     playSound(path)
+     audio_lenght = playSound(path)
      while pygame.mixer.music.get_busy():
           if GPIO.input(config["PIN"][city]["PHONE_switch_pin"]) == GPIO.HIGH:
                pauseCurrentSound()
@@ -174,7 +175,6 @@ def checkNumber(Number):
      sleep(0.5)
      if Number in contacts:
           checkingNumberSound(config['PATH']['sounds'] + language + contacts[Number] + ".wav")
-          checkingNumberSound(config['PATH']['sounds'] + "beepSound.wav")
      else:
           checkingNumberSound(config['PATH']['sounds'] + "dialedWrongNumber.wav")
 
