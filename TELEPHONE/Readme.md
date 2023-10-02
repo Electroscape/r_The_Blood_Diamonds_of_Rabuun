@@ -1,4 +1,4 @@
-# Telephone_Kidnapping
+# Telephone_BloodDiamond
 
 Telephone module
 
@@ -7,7 +7,7 @@ Telephone module
 ### Pygame
 
 Pygame a cross platform set of python modules which is used for video games.
-Its a library which retruns the interactions with a player when pressing on a keyboard.
+Its a library which returns the interactions with a player when pressing on a keyboard.
 
 **Resources**: I learned how to manage the library from this link <https://www.pygame.org/docs/> .
 
@@ -15,7 +15,7 @@ Its a library which retruns the interactions with a player when pressing on a ke
 
 - Placing a **CURRENT WORKING DIRECTORY** command to print the running file directory, if you run the script from any point in the folder.
 
-## **Functoinality**
+## **Functionality**
 
 The player starts to dial once he takes a call. Then a regular check on the number
 entered is done until reaching the correct code to display the correct voice recording.
@@ -24,3 +24,4 @@ entered is done until reaching the correct code to display the correct voice rec
 
 - The sound recordings are stored in the **sounds folder**.
 - The phone was used from the Rabuun room which was built by Cologne.
+- The sound file `013_freizeichen_30min.wav` is missing (large exceeding github limit). Found in drive somewhere
