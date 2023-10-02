@@ -5,8 +5,10 @@
 #define MaxPassLen 10
 // may aswell move this into the Oled lib?
 #define headLineMaxSize 16
+#define thresold 190 
+// depending on the volt coming from the D+ signal in the USB
 
-#define relayAmount 2
+#define relayAmount 3
 
 #define open        0
 #define closed      1
@@ -18,7 +20,7 @@ enum brains {
 
 
 enum IOpins {
-    IO_1,                                         
+    USB_INPUT_PIN,                                         
 };
 
 
@@ -34,7 +36,7 @@ enum outputValues {};
 
 
 int intputArray[inputCnt] = {
-    IO_1,
+    USB_INPUT_PIN,
 };
 
 int outputArray[outputCnt] = {};
@@ -43,22 +45,29 @@ int outputArray[outputCnt] = {};
 // -- relays
 enum relays {
     lid,
-    gate
+    gate,
+    alarmlight,
+    whitelight
 };
 
 enum relayInits {
     lidInit = closed,
     gateInit = closed,
+    alarmlightInit = closed,
 };
 
 int relayPinArray[relayAmount] = {
     lid,
     gate,
+    alarmlight,
+ 
 };
 
 int relayInitArray[relayAmount] = {
     lidInit,
     gateInit,
+    alarmlightInit,
+    
 };
 
 

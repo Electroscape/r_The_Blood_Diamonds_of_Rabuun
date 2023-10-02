@@ -31,6 +31,8 @@ int stageIndex = 0;
 // doing this so the first time it updates the brains oled without an exta setup line
 int lastStage = -1;
 
+bool playAlarmOnce = true;
+
 // general timestamp going to use this to timeout the card repsentation in unlocked and RFIDoutput
 unsigned long timestamp = millis();
 
@@ -108,6 +110,10 @@ void sendResult(bool result, int brainNo=Mother.getPolledSlave()) {
 */
 void handleCorrectPassword(int passNo) {
     Mother.motherRelay.digitalWrite(lid, open);
+    if (playAlarmOnce){
+    Mother.motherRelay.digitalWrite(alarmlight, open);
+    playAlarmOnce = false;
+    }
 }
 
 
@@ -223,13 +229,13 @@ void stageUpdate() {
 
 
 void handleInputs() {
-    int result = MotherIO.getInputs();
-    if (result == lastResult) {
-        return;
-    }
-    lastResult = result;
-    if (result & usbStick) {
+   // int result = MotherIO.getInputs();
+    int usbVoltage = analogRead(A2);
+    
+    if (((uint8_t)usbVoltage < thresold) == 1) {
+    
         Mother.motherRelay.digitalWrite(gate, open);
+        Mother.motherRelay.digitalWrite(alarmlight, closed);
     }
 
     wdt_reset();
@@ -239,6 +245,9 @@ void handleInputs() {
 void setup() {
 
     Mother.begin();
+    pinMode(A2,INPUT_PULLUP);
+    
+    
     // starts serial and default oled
     Serial.println("relay init");
     Mother.relayInit(relayPinArray, relayInitArray, relayAmount);
@@ -261,6 +270,7 @@ void setup() {
 void loop() {
     validBrainResult = Mother.rs485PerformPoll();
     if (validBrainResult) {interpreter();}
+    
     handleInputs();    
     stageUpdate(); 
     wdt_reset();
