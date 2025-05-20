@@ -1,0 +1,3 @@
+[submodule "pi_telephone"]
+	path = pi_telephone
+	url = https://github.com/Electroscape/Pi_Telephone
